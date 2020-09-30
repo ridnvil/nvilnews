@@ -1,4 +1,4 @@
-package com.example.globalnews
+package com.rid.globalnews
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
