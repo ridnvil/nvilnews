@@ -28,6 +28,8 @@ class _ArticlePageState extends State<ArticlePage> {
       itemBuilder: (context, index) {
         Articles artc = article[index];
 
+        List<String> date = artc.publishedAt.replaceAll("Z", "").split("T");
+
         return Padding(
           padding: const EdgeInsets.all(5.0),
           child: Container(
@@ -45,7 +47,7 @@ class _ArticlePageState extends State<ArticlePage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       artc.urlToImage == null
@@ -61,12 +63,25 @@ class _ArticlePageState extends State<ArticlePage> {
                               width: MediaQuery.of(context).size.width,
                               fit: BoxFit.cover,
                             ),
-                      Container(
-                          height: 50.0,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(artc.title),
-                          )),
+                      Expanded(
+                        child: Container(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(artc.title, style: TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis,),
+                                  Row(
+                                    children: [
+                                      Text(date[0]),
+                                      Expanded(child: Text(""),),
+                                      Text(date[1]),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            )),
+                      ),
                     ],
                   ),
                 ),

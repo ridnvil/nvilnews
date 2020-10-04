@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import 'package:globalnews/models/menuaction.dart';
 
 class WebviewPage extends StatefulWidget {
   String url;
@@ -14,6 +15,7 @@ class WebviewPage extends StatefulWidget {
 }
 
 class _WebviewPageState extends State<WebviewPage> {
+  final flutterWebviewPlugin = new FlutterWebviewPlugin();
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +23,23 @@ class _WebviewPageState extends State<WebviewPage> {
       url: widget.url,
       clearCache: true,
       withJavascript: true,
+      withLocalStorage: true,
+      withZoom: true,
+      initialChild: Container(
+        color: Colors.white,
+        child: Center(
+          child: Text("Waiting..."),
+        ),
+      ),
       appBar: AppBar(
         title: Text(widget.title),
         actions: <Widget>[
-          Icon(Icons.more_vert)
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              flutterWebviewPlugin.reload();
+            },
+          )
         ],
       ),
     );

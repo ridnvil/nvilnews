@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "803376804112",
+    "firebase_url": "https://nvilnews.firebaseio.com",
+    "project_id": "nvilnews",
+    "storage_bucket": "nvilnews.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:803376804112:android:495d51a4b2fce93998f595",
+        "android_client_info": {
+          "package_name": "com.rid.globalnews"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "803376804112-gh247mhg8opff0njkau9rqkkmb1qkdqr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rid.globalnews",
+            "certificate_hash": "07aa9eff0d8c52bc7a1d8c7086710cb1c0facb14"
+          }
+        },
+        {
+          "client_id": "803376804112-cdc0h3eh2cco8cs8an3p59q1ve89lsoa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjdg9KOY6fxrKZdCJBdyaZbiKNsQYzjX8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "803376804112-cdc0h3eh2cco8cs8an3p59q1ve89lsoa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

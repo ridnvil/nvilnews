@@ -1,11 +1,23 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AboutUs extends StatefulWidget {
+  User user;
+  AboutUs({this.user});
   @override
   _AboutUsState createState() => _AboutUsState();
 }
 
 class _AboutUsState extends State<AboutUs> {
+
+  int thisYear;
+
+  @override
+  void initState() {
+    super.initState();
+    DateTime dateTime = new DateTime.now();
+    thisYear = dateTime.year;
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,8 +49,14 @@ class _AboutUsState extends State<AboutUs> {
             ),
             Center(
               child: Text(
-                "About Nvil News",
-                style: TextStyle(fontSize: 30.0),
+                "Version 1.0-dev",
+                style: TextStyle(fontSize: 25.0),
+              ),
+            ),
+            Center(
+              child: Text(
+                "Build: $thisYear",
+                style: TextStyle(fontSize: 15.0),
               ),
             ),
             SizedBox(
