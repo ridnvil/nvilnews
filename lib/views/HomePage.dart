@@ -1,19 +1,17 @@
 import 'dart:convert';
 
-import 'package:firebase_admob/firebase_admob.dart';
+import 'package:admob_flutter/admob_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:globalnews/models/Article.dart';
 import 'package:globalnews/services/adsmanager.dart';
 import 'package:globalnews/services/firebase_services.dart';
-import 'package:globalnews/views/AboutUs.dart';
-import 'package:globalnews/views/ArticlesPage.dart';
 import 'package:globalnews/views/NvilHome.dart';
 import 'package:globalnews/views/Webview.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:shimmer/shimmer.dart';
 
@@ -34,18 +32,12 @@ class _HomeState extends State<Home> {
   final String url = "https://newsapi.org/v2/";
   String category;
   final String publishedAt = "&from=2020-08-30&sortBy=publishedAt";
-  final List<String> country = ['United State', 'Indonesia', 'Korea', 'Jepang'];
-  final List<String> codes = ["us", "id", "kr", "jp", "gr", "rs"];
 
   String topicLine = "world";
   String topHeadlineByCountry = "top-headlines";
 
-  List<List<Articles>> allDataArticle = [];
-
   User currentUser;
-  BannerAd _bannerAd;
-  InterstitialAd _interstitialAd;
-  bool _isInterstitialAdReady;
+  final adm = AdManager();
 
   Future<List<Articles>> getApiNews(countryCode) async {
     final response =
@@ -54,25 +46,15 @@ class _HomeState extends State<Home> {
     return data.articles;
   }
 
-  Future<List<List<Articles>>> getAllData() async {
-    codes.forEach((code) async {
-      await getApiNews(code).then((list) {
-        setState(() {
-          allDataArticle.add(list);
-        });
-      });
-    });
-    return allDataArticle;
+  Future<List<Articles>> getAllData() async {
+    return getApiNews("id");
   }
 
   Future<Null> onReferesh() {
-    return getAllData().then((value) async {
-      await allDataArticle.clear();
-      await value.forEach((element) {
-        setState(() {
-          allDataArticle.add(element);
-        });
-      });
+    return getAllData().then((value) {
+      print(value);
+    }).whenComplete(() {
+      print("Loaded");
     });
   }
 
@@ -88,213 +70,185 @@ class _HomeState extends State<Home> {
     }));
   }
 
-  void _loadBannerAd() {
-    _bannerAd
-      ..load()
-      ..show(anchorType: AnchorType.top);
-  }
-
   @override
   void initState() {
     super.initState();
     autoSignIn();
-    getAllData();
-
-    _isInterstitialAdReady = false;
-    _bannerAd = BannerAd(
-      adUnitId: AdManager.bannerAdUnitId,
-      size: AdSize.banner,
-    );
-
-    _loadBannerAd();
+    Admob.initialize();
   }
 
   @override
   void dispose() {
-    _bannerAd?.dispose();
     super.dispose();
   }
 
-  Widget getAllNewsAndShowtoUI() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 0.0),
-      child: ListView.builder(
-        itemCount: allDataArticle != null ? allDataArticle.length : 0,
-        itemBuilder: (context, index) {
-          return Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(""),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: GestureDetector(
-                      child: Text("Show More.."),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => ArticlePage(
-                                  articles: allDataArticle[index],
-                                )));
-                      },
-                    ),
-                  )
-                ],
-              ),
-              streamBuilderNews(index),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget streamBuilderNews(countrycode) {
+  Widget streamBuilderNews() {
     return Container(
-      height: 180,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: allDataArticle[countrycode] != null
-            ? allDataArticle[countrycode].length
-            : 0,
-        itemBuilder: (context, index) {
-          Articles articles = allDataArticle[countrycode][index];
-
-          List<String> dt = articles.publishedAt.split("T");
-          print(dt[0]);
-
-          if (allDataArticle[countrycode] == null) {
+      child: FutureBuilder(
+        future: getAllData(),
+        builder: (context, AsyncSnapshot snapshot) {
+          List<Articles> articles = [];
+          if(snapshot.connectionState == ConnectionState.waiting){
             return Shimmer.fromColors(
-                child: Container(
-                  color: Colors.transparent,
+              baseColor: Colors.white,
+              highlightColor: Colors.grey[500],
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+                child: GridView(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10
+                  ),
+                  children: [
+                    Card(),
+                    Card(),
+                    Card(),
+                    Card(),
+                    Card(),
+                    Card(),
+                  ],
                 ),
-                baseColor: Colors.grey[400],
-                highlightColor: Colors.grey[100]);
+              ),
+            );
           }
 
-          return Column(
-            children: <Widget>[
-              SizedBox(
-                height: 10.0,
-              ),
-              GestureDetector(
-                onTap: () {
-                  var route = MaterialPageRoute(
-                      builder: (_) => WebviewPage(
-                            url: articles.url,
-                            title: articles.title,
-                          ));
-                  Navigator.of(context).push(route);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Material(
-                    elevation: 5.0,
-                    borderRadius: BorderRadius.circular(5.0),
-                    child: Container(
-                      width: 200.0,
-                      height: 150.0,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(5.0),
-                        child: Column(
-                          children: <Widget>[
-                            articles.urlToImage == null
-                                ? Image.asset(
-                                    'assets/images/noimage.png',
-                                    height: 100.0,
-                                    width: 200.0,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.network(
-                                    articles.urlToImage,
-                                    height: 100.0,
-                                    width: 200.0,
-                                    fit: BoxFit.cover,
+          snapshot.data.forEach((data) {
+            articles.add(data);
+          });
+
+          return GridView(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10
+            ),
+            children: articles.map((article) {
+              List<String> date = article.publishedAt.replaceAll("Z", "").split("T");
+              return GestureDetector(
+                onTap: () => Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => WebviewPage(title: article.title, url: article.url,)
+                )),
+                child: Card(
+                  elevation: 4,
+                  child: Column(
+                    children: [
+                      Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.only(topLeft: Radius.circular(5), topRight: Radius.circular(5)),
+                            child: article.urlToImage == null ? Image.asset("assets/images/noimage.png", fit: BoxFit.cover):
+                            CachedNetworkImage(
+                              imageUrl: article.urlToImage,
+                              imageBuilder: (context, imageProvider) => Container(
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: imageProvider,
+                                      fit: BoxFit.cover
                                   ),
-                            Container(
-                              height: 50.0,
-                              child: Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      articles.title,
-                                      style: TextStyle(
-                                          fontSize: 15.0,
-                                          color: Theme.of(context)
-                                              .primaryColorDark),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          Text(dt[0], style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .primaryColorDark),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          Expanded(child: Text(""),),
-                                          Text(dt[1].replaceAll("Z", ""))
-                                        ],
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ),
+                              placeholder: (context, url) => Shimmer.fromColors(
+                                baseColor: Colors.green,
+                                highlightColor: Colors.yellow,
+                                child: Container(),
+                              ),
+                              errorWidget: (context, url, error) => Icon(Icons.error),
+                            ),
+                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(article.title),
+                            SizedBox(height: 3,),
+                            Row(
+                              children: [
+                                Text(date[0]),
+                                Expanded(child: Text(""),),
+                                Text(date[1]),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ),
-            ],
+              );
+            }).toList(),
           );
-        },
+        }
       ),
     );
   }
 
-  Widget endDrawer(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        children: <Widget>[
-          currentUser == null ? Container(
-            width: MediaQuery.of(context).size.width,
-            height: 200.0,
-            child: Center(
-              child: FlatButton(
-                color: Colors.redAccent,
-                textColor: Colors.white,
-                onPressed: () async{
-
-                },
-                child: Text('Sign In With Google'),
-              ),
-            ),
-          ):
-          Container(
-            padding: EdgeInsets.all(5.0),
-            height: 250.0,
-            child: Column(
+  Widget appCorousell() {
+    return CarouselSlider(
+      options: CarouselOptions(
+        autoPlay: true,
+        height: 200.0
+      ),
+      items: [
+        Container(
+          child: Center(
+            child: Row(
               children: [
-                Material(
-                  elevation: 5,
-                  child: Image.network(currentUser.photoURL, fit: BoxFit.cover,),
+                Image.asset("assets/images/nvilnews.png"),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Selamat Datang, ", style: TextStyle(fontSize: 20.0, color: Colors.white),),
+                      Text("di Portal Berita", style: TextStyle(fontSize: 20.0, color: Colors.white),),
+                      Text("Nvil News!", style: TextStyle(fontSize: 20.0, color: Colors.white),),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.red, Colors.yellow],
+              begin: Alignment.centerLeft,
+              end: Alignment.bottomRight
+            )
+          ),
+        ),
+        Container(
+          child: Center(
+            child: Text("Menyajikan Beragam Berita,", style: TextStyle(fontSize: 30.0, color: Colors.white),),
+          ),
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.teal, Colors.yellow],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.bottomRight
+              )
+          ),
+        ),
+        Container(
+          child: Center(
+            child: Text("Dari dalam & luar Negeri..", style: TextStyle(fontSize: 30.0, color: Colors.white),),
+          ),
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.blue, Colors.yellow],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.bottomRight
+              )
+          ),
+        ),
+      ],
     );
   }
 
@@ -302,7 +256,6 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
         key: _scaffoldKey,
-        endDrawer: endDrawer(context),
         appBar: AppBar(
           leading: IconButton(
               onPressed: () {
@@ -403,20 +356,41 @@ class _HomeState extends State<Home> {
         ),
         backgroundColor: Theme.of(context).primaryColor,
         body: SafeArea(
-          child: FutureBuilder(
-            future: _initAdMob(),
-            builder: (context, snapshot) {
-              return RefreshIndicator(
-                key: _globalKeyRefIndicator,
-                onRefresh: onReferesh,
-                child: getAllNewsAndShowtoUI(),
-              );
-            }
+          child: RefreshIndicator(
+            onRefresh: onReferesh,
+            child: ListView(
+              children: [
+                appCorousell(),
+                Material(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Column(
+                      children: [
+                        Text("New Post", style: TextStyle(fontSize: 20.0),),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  child: AdmobBanner(
+                    adUnitId: adm.bannerAdUnitId(),
+                    adSize: AdmobBannerSize.BANNER,
+                    listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+                      print(event);
+                      print(args);
+                    },
+                    onBannerCreated: (AdmobBannerController controller) {
+                      // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+                      // Normally you don't need to worry about disposing this yourself, it's handled.
+                      // If you need direct access to dispose, this is your guy!
+                      // controller.dispose();
+                    },
+                  ),
+                ),
+                streamBuilderNews(),
+              ],
+            ),
           ),
         ));
-  }
-
-  Future<void> _initAdMob() {
-    return FirebaseAdMob.instance.initialize(appId: AdManager.appId);
   }
 }

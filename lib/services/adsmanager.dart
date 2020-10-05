@@ -2,7 +2,7 @@ import 'dart:io';
 
 class AdManager {
 
-  static String get appId {
+  String appId() {
     if(Platform.isAndroid){
       return "ca-app-pub-6018702380435080~9322156402";
     } else{
@@ -10,7 +10,7 @@ class AdManager {
     }
   }
 
-  static String get bannerAdUnitId {
+  String bannerAdUnitId() {
     if (Platform.isAndroid) {
       return "ca-app-pub-6018702380435080/7434359666";
     } else {
@@ -18,7 +18,7 @@ class AdManager {
     }
   }
 
-  static String get interstitialAdUnitId {
+  String interstitialAdUnitId() {
     if (Platform.isAndroid) {
       return "ca-app-pub-6018702380435080/3906194102";
     } else {
@@ -26,7 +26,7 @@ class AdManager {
     }
   }
 
-  static String get rewardedAdUnitId {
+  String rewardedAdUnitId() {
     if (Platform.isAndroid) {
       return "ca-app-pub-6018702380435080/6547302336";
     } else {

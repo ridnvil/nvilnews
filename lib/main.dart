@@ -1,3 +1,4 @@
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,10 +23,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           primaryColor: Colors.white, primaryColorDark: Colors.black87,
           textTheme: GoogleFonts.acmeTextTheme().copyWith(
-            button: GoogleFonts.ubuntuMono(
-              fontSize: 16,
-              fontWeight: FontWeight.bold
-            )
+            button: GoogleFonts.ubuntuMono()
           ),
       ),
       home: Home(),
