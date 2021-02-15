@@ -1,4 +1,4 @@
-# globalnews
+# globalnews Baru
 
 A new Flutter project.
 
